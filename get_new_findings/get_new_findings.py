@@ -2,16 +2,8 @@ import requests
 from datetime import datetime, timedelta
 import json
 import os
+import argparse
 
-
-## Change Values
-days = 5
-assessment_name = ""
-
-cloud_accounts = [
-]
-
-## Change Values End
 
 apiKey = os.getenv('DOME9_API_KEY')
 apiSecret = os.getenv('DOME9_API_SECRET')
@@ -27,6 +19,22 @@ headers = {
 'content-type':
     'application/json'
 }
+
+
+def args():
+    parser = argparse.ArgumentParser(description='Get the New Findings between the last X Days')
+    parser.add_argument(
+        '-d', '--days', dest="days", type=int, default=7,
+        help='The number of days to search for new findings')
+
+    parser.add_argument(
+        '-n', '--name', dest='assessment_name', type=str, required=True,
+        help='<Required> Assessment Name to search for new findings')
+
+    parser.add_argument(
+        '-a', '--accounts', dest='cloud_accounts', type=str, nargs='+', required=True,
+        help='<Required> Cloud Accounts ID')
+    return parser.parse_args()
 
 
 def has_cloud_accounts(processed_cloud_accounts):
@@ -48,22 +56,22 @@ def get_assessment_history():
 
 def get_assessments():
     assessments = dict()
-    assessments[assessment_name] = dict()
-    for cloud_account in cloud_accounts:
-        assessments[assessment_name][cloud_account] = dict()
+    assessments[args.assessment_name] = dict()
+    for cloud_account in args.cloud_accounts:
+        assessments[args.assessment_name][cloud_account] = dict()
     has_next = True
     page_number = 1
-    processed_cloud_accounts = cloud_accounts.copy()
+    processed_cloud_accounts = args.cloud_accounts.copy()
     while has_next:
         history = get_assessment_history()
         payload['pageNumber'] = page_number
         for assessment in history["results"]:
-            if assessment_name != assessment["request"]["name"] or assessment["request"]["dome9CloudAccountId"] not in processed_cloud_accounts:
+            if args.assessment_name != assessment["request"]["name"] or assessment["request"]["dome9CloudAccountId"] not in processed_cloud_accounts:
                 continue
             # print(assessment_name)
             # print(assessment["request"]["dome9CloudAccountId"])
             result = get_assessment_result(assessment["id"])
-            assessments[assessment_name][assessment["request"]["dome9CloudAccountId"]] = get_rules_from_assessment(result["tests"], result["testEntities"])
+            assessments[args.assessment_name][assessment["request"]["dome9CloudAccountId"]] = get_rules_from_assessment(result["tests"], result["testEntities"])
 
             processed_cloud_accounts.remove(assessment["request"]["dome9CloudAccountId"])
             if not has_cloud_accounts(processed_cloud_accounts):
@@ -116,26 +124,28 @@ def print_entity(entity):
     print("Type: " + str(entity["type"]) + " => Name: " + str(entity["name"]))
 
 
+args = args()
+
 payload['creationTime'] = dict()
-payload['creationTime']["from"] = datetime.strftime(datetime.now() - timedelta(5), '%Y-%m-%dT00:00:00Z')
-payload['creationTime']["to"] = datetime.strftime(datetime.now() - timedelta(5), '%Y-%m-%dT23:59:59Z')
+payload['creationTime']["from"] = datetime.strftime(datetime.now() - timedelta(args.days), '%Y-%m-%dT00:00:00Z')
+payload['creationTime']["to"] = datetime.strftime(datetime.now() - timedelta(args.days), '%Y-%m-%dT23:59:59Z')
 first_day_assessments = get_assessments()
 payload['creationTime']["from"] = datetime.strftime(datetime.now() - timedelta(0), '%Y-%m-%dT00:00:00Z')
 payload['creationTime']["to"] = datetime.strftime(datetime.now() - timedelta(0), '%Y-%m-%dT23:59:59Z')
 last_day_assessments = get_assessments()
 
-for cloud_account in cloud_accounts:
-    print("Assessment: " + assessment_name + " => Cloud Account: " + cloud_account)
-    for rule in last_day_assessments[assessment_name][cloud_account]:
-        print("Rule Name: " + last_day_assessments[assessment_name][cloud_account][rule]["name"])
-        if rule_has_entities(last_day_assessments[assessment_name][cloud_account][rule]["entities"]):
-            if rule in first_day_assessments[assessment_name][cloud_account]:
-                for entity in last_day_assessments[assessment_name][cloud_account][rule]["entities"]:
-                    if entity not in first_day_assessments[assessment_name][cloud_account][rule]["entities"]:
-                        print_entity(last_day_assessments[assessment_name][cloud_account][rule]["entities"][entity])
+for cloud_account in args.cloud_accounts:
+    print("Assessment: " + args.assessment_name + " => Cloud Account: " + cloud_account)
+    for rule in last_day_assessments[args.assessment_name][cloud_account]:
+        print("Rule Name: " + last_day_assessments[args.assessment_name][cloud_account][rule]["name"])
+        if rule_has_entities(last_day_assessments[args.assessment_name][cloud_account][rule]["entities"]):
+            if rule in first_day_assessments[args.assessment_name][cloud_account]:
+                for entity in last_day_assessments[args.assessment_name][cloud_account][rule]["entities"]:
+                    if entity not in first_day_assessments[args.assessment_name][cloud_account][rule]["entities"]:
+                        print_entity(last_day_assessments[args.assessment_name][cloud_account][rule]["entities"][entity])
             else:
-                for entity in last_day_assessments[assessment_name][cloud_account][rule]["entities"]:
-                    print_entity(last_day_assessments[assessment_name][cloud_account][rule]["entities"][entity])
+                for entity in last_day_assessments[args.assessment_name][cloud_account][rule]["entities"]:
+                    print_entity(last_day_assessments[args.assessment_name][cloud_account][rule]["entities"][entity])
         else:
-            if rule not in first_day_assessments[assessment_name][cloud_account]:
+            if rule not in first_day_assessments[args.assessment_name][cloud_account]:
                 print("This Rule hasn't have entities but it's a new non compliant")
