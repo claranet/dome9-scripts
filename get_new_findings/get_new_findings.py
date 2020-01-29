@@ -4,6 +4,9 @@ import json
 from os import environ
 import argparse
 import sys
+import smtplib
+import re
+
 
 base_url = "https://api.dome9.com/v2/"
 
@@ -20,13 +23,21 @@ headers = {
 }
 
 
+class validate_email():
+    def __call__(self, value):
+        regex = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$")
+        if not re.search(regex, value):
+            raise argparse.ArgumentTypeError(value+" is not a valid email")
+        return value
+
+
 def check_environment_vars():
     if environ.get('DOME9_API_KEY') is None:
-        print("Environment Var required: DOME9_API_KEY")
+        print("Environment Variable required: DOME9_API_KEY")
         sys.exit(0)
 
     if environ.get('DOME9_API_SECRET') is None:
-        print("Environment Var required: DOME9_API_SECRET")
+        print("Environment Variable required: DOME9_API_SECRET")
         sys.exit(0)
 
 
@@ -43,6 +54,11 @@ def args():
     parser.add_argument(
         '-a', '--accounts', dest='cloud_accounts', type=str, nargs='+', required=True,
         help='<Required> Cloud Accounts ID')
+
+    parser.add_argument(
+        '-e', '--email', dest='email', type=validate_email(),
+        help='Email to send Report')
+
     return parser.parse_args()
 
 
@@ -66,6 +82,27 @@ def api_request(verb, url, has_data):
         print(str(e))
         sys.exit(0)
     return response.json()
+
+
+def send_email(message):
+
+    if args.email is None:
+        return
+
+    if environ.get('SMTP_SERVER') is None or environ.get('SMTP_PORT') is None or environ.get('SMTP_USER') is None or environ.get('SMTP_USER_PASSWORD') is None:
+        print("Environment Variables required: SMTP_SERVER, SMTP_PORT, SMTP_USER, SMTP_USER_PASSWORD")
+        print("EMAIL haven't been send")
+        return
+
+    try:
+        server = smtplib.SMTP_SSL(environ.get('SMTP_SERVER'), environ.get('SMTP_PORT'))
+        server.ehlo()
+        server.login(environ.get('SMTP_USER'), environ.get('SMTP_USER_PASSWORD'))
+        server.sendmail(environ.get('SMTP_USER'), args.email, message)
+    except Exception as e:
+        print("Error sending the email")
+        print(str(e))
+        sys.exit(0)
 
 
 def has_cloud_accounts(processed_cloud_accounts):
@@ -137,10 +174,8 @@ def rule_has_entities(entities):
 def print_entity(entity):
     print("Type: " + str(entity["type"]) + " => Name: " + str(entity["name"]))
 
-
 args = args()
 check_environment_vars()
-
 payload['creationTime'] = dict()
 payload['creationTime']["from"] = datetime.strftime(datetime.now() - timedelta(args.days), '%Y-%m-%dT00:00:00Z')
 payload['creationTime']["to"] = datetime.strftime(datetime.now() - timedelta(args.days), '%Y-%m-%dT23:59:59Z')
