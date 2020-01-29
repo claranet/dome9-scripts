@@ -1,13 +1,12 @@
-import requests
+from requests import Session, Request
 from datetime import datetime, timedelta
 import json
-import os
+from os import environ
 import argparse
+import sys
 
+base_url = "https://api.dome9.com/v2/"
 
-apiKey = os.getenv('DOME9_API_KEY')
-apiSecret = os.getenv('DOME9_API_SECRET')
-proxyDict = None
 payload = {
     "sorting": {
         "fieldName": "createdTime",
@@ -16,9 +15,19 @@ payload = {
 }
 
 headers = {
-'content-type':
-    'application/json'
+    'content-type':
+        'application/json'
 }
+
+
+def check_environment_vars():
+    if environ.get('DOME9_API_KEY') is None:
+        print("Environment Var required: DOME9_API_KEY")
+        sys.exit(0)
+
+    if environ.get('DOME9_API_SECRET') is None:
+        print("Environment Var required: DOME9_API_SECRET")
+        sys.exit(0)
 
 
 def args():
@@ -37,21 +46,38 @@ def args():
     return parser.parse_args()
 
 
+def api_request(verb, url, has_data):
+    try:
+        s = Session()
+        r = Request(
+            verb,
+            base_url+url,
+            headers=headers,
+            auth=(environ.get('DOME9_API_KEY'), environ.get('DOME9_API_SECRET'))
+        )
+
+        if has_data:
+            r.data = json.dumps(payload)
+        prepared_request = s.prepare_request(r)
+        response = s.send(prepared_request, proxies=environ.get('DOME9_PROXY'))
+        if response.status_code != 200:
+            raise Exception("Dome9 API Response unexpected: " + response.reason)
+    except Exception as e:
+        print(str(e))
+        sys.exit(0)
+    return response.json()
+
+
 def has_cloud_accounts(processed_cloud_accounts):
     return False if len(processed_cloud_accounts) == 0 else True
 
 
 def get_assessment_history():
-    response = requests.post(
-        "https://api.dome9.com/v2/AssessmentHistoryV2/view/timeRange",
-        data=json.dumps(payload),
-        headers=headers,
-        auth=(apiKey, apiSecret),
-        proxies=proxyDict)
-    if response.status_code != 200:
-        # TODO Exception
-        print("TODO")
-    return response.json()
+    return api_request("POST", "AssessmentHistoryV2/view/timeRange", True)
+
+
+def get_assessment_result(id):
+    return api_request("GET", "AssessmentHistoryV2/" + str(id), False)
 
 
 def get_assessments():
@@ -84,18 +110,6 @@ def get_assessments():
     return assessments
 
 
-def get_assessment_result(id):
-    response = requests.get(
-        "https://api.dome9.com/v2/AssessmentHistoryV2/" + str(id),
-        headers=headers,
-        auth=(apiKey, apiSecret),
-        proxies=proxyDict)
-    if response.status_code != 200:
-        # TODO Exception
-        print("TODO")
-    return response.json()
-
-
 def get_rules_from_assessment(rules, entities):
     rules_result = dict()
     for rule in rules:
@@ -125,6 +139,7 @@ def print_entity(entity):
 
 
 args = args()
+check_environment_vars()
 
 payload['creationTime'] = dict()
 payload['creationTime']["from"] = datetime.strftime(datetime.now() - timedelta(args.days), '%Y-%m-%dT00:00:00Z')
