@@ -6,8 +6,10 @@ import argparse
 import sys
 import smtplib
 import re
+from email.message import EmailMessage
 
 
+message = EmailMessage()
 base_url = "https://api.dome9.com/v2/"
 
 payload = {
@@ -84,7 +86,7 @@ def api_request(verb, url, has_data):
     return response.json()
 
 
-def send_email(message):
+def send_email():
 
     if args.email is None:
         return
@@ -94,11 +96,15 @@ def send_email(message):
         print("EMAIL haven't been send")
         return
 
+    message['Subject'] = "New Findings"
+    message['From'] = environ.get('SMTP_USER')
+    message['To'] = args.email
+
     try:
         server = smtplib.SMTP_SSL(environ.get('SMTP_SERVER'), environ.get('SMTP_PORT'))
         server.ehlo()
         server.login(environ.get('SMTP_USER'), environ.get('SMTP_USER_PASSWORD'))
-        server.sendmail(environ.get('SMTP_USER'), args.email, message)
+        server.send_message(message)
     except Exception as e:
         print("Error sending the email")
         print(str(e))
@@ -176,6 +182,8 @@ def print_entity(entity):
 
 args = args()
 check_environment_vars()
+
+
 payload['creationTime'] = dict()
 payload['creationTime']["from"] = datetime.strftime(datetime.now() - timedelta(args.days), '%Y-%m-%dT00:00:00Z')
 payload['creationTime']["to"] = datetime.strftime(datetime.now() - timedelta(args.days), '%Y-%m-%dT23:59:59Z')
