@@ -6,10 +6,11 @@ import argparse
 import sys
 import smtplib
 import re
-from email.message import EmailMessage
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from jinja2 import Environment, FileSystemLoader
 
 
-message = EmailMessage()
 base_url = "https://api.dome9.com/v2/"
 
 payload = {
@@ -86,7 +87,7 @@ def api_request(verb, url, has_data):
     return response.json()
 
 
-def send_email():
+def send_email(html):
 
     if args.email is None:
         return
@@ -96,9 +97,12 @@ def send_email():
         print("EMAIL haven't been send")
         return
 
+    message = MIMEMultipart('alternative')
     message['Subject'] = "New Findings"
     message['From'] = environ.get('SMTP_USER')
     message['To'] = args.email
+    # message.set_content(msg)
+    message.attach(MIMEText(html, 'html'))
 
     try:
         server = smtplib.SMTP_SSL(environ.get('SMTP_SERVER'), environ.get('SMTP_PORT'))
@@ -159,6 +163,7 @@ def get_rules_from_assessment(rules, entities):
         if rule["nonComplyingCount"] != 0:
             rules_result[rule["rule"]["ruleId"]] = dict()
             rules_result[rule["rule"]["ruleId"]]["name"] = rule["rule"]["name"]
+            rules_result[rule["rule"]["ruleId"]]["severity"] = rule["rule"]["severity"]
             rules_result[rule["rule"]["ruleId"]]["entities"] = get_entities_from_rule(rule, entities)
     return rules_result
 
@@ -180,9 +185,20 @@ def rule_has_entities(entities):
 def print_entity(entity):
     print("Type: " + str(entity["type"]) + " => Name: " + str(entity["name"]))
 
+
+def add_entity_to_result(account, rule, entity):
+    if account not in result:
+        result[account] = dict()
+    if rule["severity"] not in result[account]:
+        result[account][rule["severity"]] = dict()
+    if rule["name"] not in result[account][rule["severity"]]:
+        result[account][rule["severity"]][rule["name"]] = []
+    result[account][rule["severity"]][rule["name"]].append(entity)
+
+
+result = dict()
 args = args()
 check_environment_vars()
-
 
 payload['creationTime'] = dict()
 payload['creationTime']["from"] = datetime.strftime(datetime.now() - timedelta(args.days), '%Y-%m-%dT00:00:00Z')
@@ -193,17 +209,36 @@ payload['creationTime']["to"] = datetime.strftime(datetime.now() - timedelta(0),
 last_day_assessments = get_assessments()
 
 for cloud_account in args.cloud_accounts:
-    print("Assessment: " + args.assessment_name + " => Cloud Account: " + cloud_account)
     for rule in last_day_assessments[args.assessment_name][cloud_account]:
-        print("Rule Name: " + last_day_assessments[args.assessment_name][cloud_account][rule]["name"])
         if rule_has_entities(last_day_assessments[args.assessment_name][cloud_account][rule]["entities"]):
             if rule in first_day_assessments[args.assessment_name][cloud_account]:
                 for entity in last_day_assessments[args.assessment_name][cloud_account][rule]["entities"]:
                     if entity not in first_day_assessments[args.assessment_name][cloud_account][rule]["entities"]:
-                        print_entity(last_day_assessments[args.assessment_name][cloud_account][rule]["entities"][entity])
+                        add_entity_to_result(
+                            cloud_account,
+                            last_day_assessments[args.assessment_name][cloud_account][rule],
+                            last_day_assessments[args.assessment_name][cloud_account][rule]["entities"][entity]
+                        )
             else:
                 for entity in last_day_assessments[args.assessment_name][cloud_account][rule]["entities"]:
-                    print_entity(last_day_assessments[args.assessment_name][cloud_account][rule]["entities"][entity])
+                    add_entity_to_result(
+                        cloud_account,
+                        last_day_assessments[args.assessment_name][cloud_account][rule],
+                        last_day_assessments[args.assessment_name][cloud_account][rule]["entities"][entity]
+                    )
         else:
             if rule not in first_day_assessments[args.assessment_name][cloud_account]:
                 print("This Rule hasn't have entities but it's a new non compliant")
+                # TODO Passar para o result
+
+# --------------------------------------------------
+
+template_loader = FileSystemLoader('templates')
+env = Environment(loader=template_loader)
+template = env.get_template('table.html')
+html = ""
+for cloud_account in result:
+    html += template.render(result=result, cloud_account=cloud_account)
+
+send_email(html)
+
