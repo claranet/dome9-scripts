@@ -25,6 +25,18 @@ headers = {
         'application/json'
 }
 
+dome9_url_assets = "https://secure.dome9.com/v2/protected-asset/generic?"
+
+type_to_url = {
+    'kms': 'KMS',
+    'rds': 'RDS',
+    'vpc': 'VPC',
+    'efs': 'EFS',
+    'elb': 'ELB',
+}
+
+resources_without_url = ["iamPolicy", "region", "subnet", "iam", "routeTable", "ecsTask"]
+
 
 class validate_email():
     def __call__(self, value):
@@ -32,6 +44,18 @@ class validate_email():
         if not re.search(regex, value):
             raise argparse.ArgumentTypeError(value+" is not a valid email")
         return value
+
+
+def convertType_to_url(type, account, assetId):
+    if type in resources_without_url:
+        return 'N/A'
+
+    if type == 'securityGroup':
+        return 'https://secure.dome9.com/v2/security-group/aws/'+assetId
+
+    if type in type_to_url:
+        return dome9_url_assets + "cloudAccountId="+account+"&assetType="+type_to_url[type] +"&assetId="+assetId
+    return dome9_url_assets + "cloudAccountId="+account+"&assetType="+type[0].upper() + type[1:] +"&assetId="+assetId
 
 
 def check_environment_vars():
@@ -179,15 +203,12 @@ def get_entities_from_rule(rule, entities):
             entities_result[entity["testObj"]["id"]] = dict()
             entities_result[entity["testObj"]["id"]]["type"] = entity["testObj"]["entityType"]
             entities_result[entity["testObj"]["id"]]["name"] = entities[entity["testObj"]["entityType"]][entity["testObj"]["entityIndex"]]["name"]
+            entities_result[entity["testObj"]["id"]]["assetId"] = entity["testObj"]["id"]
     return entities_result
 
 
 def rule_has_entities(entities):
     return True if len(entities) > 0 else False
-
-
-def print_entity(entity):
-    print("Type: " + str(entity["type"]) + " => Name: " + str(entity["name"]))
 
 
 def add_entity_to_result(account, name, awsCloudAccountID, rule, entity):
@@ -201,7 +222,12 @@ def add_entity_to_result(account, name, awsCloudAccountID, rule, entity):
         result[account][rule["severity"]][rule["name"]] = dict()
         result[account][rule["severity"]][rule["name"]]["entities"] = []
         result[account][rule["severity"]][rule["name"]]["remediation"] = rule["remediation"]
-    result[account][rule["severity"]][rule["name"]]["entities"].append(entity)
+    print(entity['type'] + " - " + convertType_to_url(entity['type'], account, entity['assetId']))
+    result[account][rule["severity"]][rule["name"]]["entities"].append({
+        'name': entity['name'],
+        'type': entity['type'],
+        'url': convertType_to_url(entity['type'], account, entity['assetId'])
+    })
 
 
 result = dict()
