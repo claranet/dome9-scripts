@@ -251,6 +251,5 @@ template = env.get_template('table.html')
 html = ""
 for cloud_account in result:
     html += template.render(result=result, cloud_account=cloud_account)
-
 send_email(html)
 

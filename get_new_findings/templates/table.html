@@ -3,6 +3,7 @@
     <tr>
         <th rowspan="2">Severity</th>
         <th rowspan="2">Rule</th>
+        <th rowspan="2">Remediation</th>
         <th colspan="2">Entity</th>
         <tr>
             <th>Type</th>
@@ -11,42 +12,53 @@
     </tr>
     {% for rule in result[cloud_account]['High'] %}
     <tr>
-        <td rowspan="{{ result[cloud_account]['High'][rule]['entities']|length + 1}}">High</td>
-        <td rowspan="{{ result[cloud_account]['High'][rule]['entities']|length + 1}}">{{ rule }}</td>
-        {% for entity in result[cloud_account]['High'][rule]['entities'] %}
+        <td rowspan="{{ result[cloud_account]['High'][rule]['entities']|length}}">High</td>
+        <td rowspan="{{ result[cloud_account]['High'][rule]['entities']|length}}">{{ rule }}</td>
+        <td rowspan="{{ result[cloud_account]['High'][rule]['entities']|length}}">{{ result[cloud_account]['High'][rule]['remediation'] }}</td>
+        <td>{{ result[cloud_account]['High'][rule]['entities'][0]['type'] }}</td>
+        <td>{{ result[cloud_account]['High'][rule]['entities'][0]['name'] }}</td>
 
+    </tr>
+        {% for entity in result[cloud_account]['High'][rule]['entities'][1:] %}
             <tr>
                 <td>{{ entity['type'] }}</td>
                 <td>{{ entity['name'] }}</td>
             </tr>
         {% endfor %}
-    </tr>
+
     {% endfor %}
+
     {% for rule in result[cloud_account]['Medium'] %}
     <tr>
-        <td rowspan="{{ result[cloud_account]['Medium'][rule]['entities']|length + 1}}">Medium</td>
-        <td rowspan="{{ result[cloud_account]['Medium'][rule]['entities']|length + 1}}">{{ rule }}</td>
-        {% for entity in result[cloud_account]['Medium'][rule]['entities'] %}
+        <td rowspan="{{ result[cloud_account]['Medium'][rule]['entities']|length}}">Medium</td>
+        <td rowspan="{{ result[cloud_account]['Medium'][rule]['entities']|length}}">{{ rule }}</td>
+        <td rowspan="{{ result[cloud_account]['Medium'][rule]['entities']|length}}">{{ result[cloud_account]['Medium'][rule]['remediation'] }}</td>
+        <td>{{ result[cloud_account]['Medium'][rule]['entities'][0]['type'] }}</td>
+        <td>{{ result[cloud_account]['Medium'][rule]['entities'][0]['name'] }}</td>
+    </tr>
+        {% for entity in result[cloud_account]['Medium'][rule]['entities'][1:] %}
+            <tr>
+                <td>{{ entity['type'] }}</td>
+                <td>{{ entity['name'] }}</td>
+            </tr>
+        {% endfor %}
+    {% endfor %}
 
-    <tr>
-        <td>{{ entity['type'] }}</td>
-        <td>{{ entity['name'] }}</td>
-    </tr>
-    {% endfor %}
-    </tr>
-    {% endfor %}
     {% for rule in result[cloud_account]['Low'] %}
     <tr>
-        <td rowspan="{{ result[cloud_account]['Low'][rule]['entities']|length + 1}}">Low</td>
-        <td rowspan="{{ result[cloud_account]['Low'][rule]['entities']|length + 1}}">{{ rule }}</td>
-        {% for entity in result[cloud_account]['Low'][rule]['entities'] %}
-
+        <td rowspan="{{ result[cloud_account]['Low'][rule]['entities']|length}}">Low</td>
+        <td rowspan="{{ result[cloud_account]['Low'][rule]['entities']|length}}">{{ rule }}</td>
+        <td rowspan="{{ result[cloud_account]['Low'][rule]['entities']|length}}">{{ result[cloud_account]['Low'][rule]['remediation'] }}</td>
+        <td>{{ result[cloud_account]['Low'][rule]['entities'][0]['type'] }}</td>
+        <td>{{ result[cloud_account]['Low'][rule]['entities'][0]['name'] }}</td>
     <tr>
-        <td>{{ entity['type'] }}</td>
-        <td>{{ entity['name'] }}</td>
-    </tr>
-    {% endfor %}
-    </tr>
+        {% for entity in result[cloud_account]['Low'][rule]['entities'][1:] %}
+            <tr>
+                <td>{{ entity['type'] }}</td>
+                <td>{{ entity['name'] }}</td>
+            </tr>
+            {% endfor %}
+        </tr>
     {% endfor %}
 </table>
 </br>
