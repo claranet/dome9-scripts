@@ -123,6 +123,10 @@ def get_assessment_history():
     return api_request("POST", "AssessmentHistoryV2/view/timeRange", True)
 
 
+def get_cloudAccount_name(id):
+    return api_request("GET", "CloudAccounts/" + str(id), False)["name"]
+
+
 def get_assessment_result(id):
     return api_request("GET", "AssessmentHistoryV2/" + str(id), False)
 
@@ -141,11 +145,10 @@ def get_assessments():
         for assessment in history["results"]:
             if args.assessment_name != assessment["request"]["name"] or assessment["request"]["dome9CloudAccountId"] not in processed_cloud_accounts:
                 continue
-            # print(assessment_name)
-            # print(assessment["request"]["dome9CloudAccountId"])
             result = get_assessment_result(assessment["id"])
-            assessments[args.assessment_name][assessment["request"]["dome9CloudAccountId"]] = get_rules_from_assessment(result["tests"], result["testEntities"])
-
+            assessments[args.assessment_name][assessment["request"]["dome9CloudAccountId"]]["rules"] = get_rules_from_assessment(result["tests"], result["testEntities"])
+            assessments[args.assessment_name][assessment["request"]["dome9CloudAccountId"]]["awsCloudAccountID"] = assessment["request"]["externalCloudAccountId"]
+            assessments[args.assessment_name][assessment["request"]["dome9CloudAccountId"]]["name"] = get_cloudAccount_name(assessment["request"]["dome9CloudAccountId"])
             processed_cloud_accounts.remove(assessment["request"]["dome9CloudAccountId"])
             if not has_cloud_accounts(processed_cloud_accounts):
                 break
@@ -164,6 +167,7 @@ def get_rules_from_assessment(rules, entities):
             rules_result[rule["rule"]["ruleId"]] = dict()
             rules_result[rule["rule"]["ruleId"]]["name"] = rule["rule"]["name"]
             rules_result[rule["rule"]["ruleId"]]["severity"] = rule["rule"]["severity"]
+            rules_result[rule["rule"]["ruleId"]]["remediation"] = rule["rule"]["remediation"]
             rules_result[rule["rule"]["ruleId"]]["entities"] = get_entities_from_rule(rule, entities)
     return rules_result
 
@@ -186,14 +190,18 @@ def print_entity(entity):
     print("Type: " + str(entity["type"]) + " => Name: " + str(entity["name"]))
 
 
-def add_entity_to_result(account, rule, entity):
+def add_entity_to_result(account, name, awsCloudAccountID, rule, entity):
     if account not in result:
         result[account] = dict()
+        result[account]['awsCloudAccountID'] = awsCloudAccountID
+        result[account]['name'] = name
     if rule["severity"] not in result[account]:
         result[account][rule["severity"]] = dict()
     if rule["name"] not in result[account][rule["severity"]]:
-        result[account][rule["severity"]][rule["name"]] = []
-    result[account][rule["severity"]][rule["name"]].append(entity)
+        result[account][rule["severity"]][rule["name"]] = dict()
+        result[account][rule["severity"]][rule["name"]]["entities"] = []
+        result[account][rule["severity"]][rule["name"]]["remediation"] = rule["remediation"]
+    result[account][rule["severity"]][rule["name"]]["entities"].append(entity)
 
 
 result = dict()
@@ -209,25 +217,29 @@ payload['creationTime']["to"] = datetime.strftime(datetime.now() - timedelta(0),
 last_day_assessments = get_assessments()
 
 for cloud_account in args.cloud_accounts:
-    for rule in last_day_assessments[args.assessment_name][cloud_account]:
-        if rule_has_entities(last_day_assessments[args.assessment_name][cloud_account][rule]["entities"]):
+    for rule in last_day_assessments[args.assessment_name][cloud_account]["rules"]:
+        if rule_has_entities(last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]):
             if rule in first_day_assessments[args.assessment_name][cloud_account]:
-                for entity in last_day_assessments[args.assessment_name][cloud_account][rule]["entities"]:
-                    if entity not in first_day_assessments[args.assessment_name][cloud_account][rule]["entities"]:
+                for entity in last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]:
+                    if entity not in first_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]:
                         add_entity_to_result(
                             cloud_account,
-                            last_day_assessments[args.assessment_name][cloud_account][rule],
-                            last_day_assessments[args.assessment_name][cloud_account][rule]["entities"][entity]
+                            last_day_assessments[args.assessment_name][cloud_account]['name'],
+                            last_day_assessments[args.assessment_name][cloud_account]['awsCloudAccountID'],
+                            last_day_assessments[args.assessment_name][cloud_account]["rules"][rule],
+                            last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"][entity]
                         )
             else:
-                for entity in last_day_assessments[args.assessment_name][cloud_account][rule]["entities"]:
+                for entity in last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]:
                     add_entity_to_result(
                         cloud_account,
-                        last_day_assessments[args.assessment_name][cloud_account][rule],
-                        last_day_assessments[args.assessment_name][cloud_account][rule]["entities"][entity]
+                        last_day_assessments[args.assessment_name][cloud_account]['name'],
+                        last_day_assessments[args.assessment_name][cloud_account]['awsCloudAccountID'],
+                        last_day_assessments[args.assessment_name][cloud_account]["rules"][rule],
+                        last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"][entity]
                     )
         else:
-            if rule not in first_day_assessments[args.assessment_name][cloud_account]:
+            if rule not in first_day_assessments[args.assessment_name][cloud_account]["rules"]:
                 print("This Rule hasn't have entities but it's a new non compliant")
                 # TODO Passar para o result
 

@@ -1,5 +1,5 @@
 <table style="width:100%" border="1">
-    <caption>Cloud Account: {{ cloud_account }}</caption>
+    <caption>AWS Cloud Account - Name: {{ result[cloud_account]['name'] }} - ID: {{ result[cloud_account]['awsCloudAccountID'] }} </caption>
     <tr>
         <th rowspan="2">Severity</th>
         <th rowspan="2">Rule</th>
@@ -11,9 +11,9 @@
     </tr>
     {% for rule in result[cloud_account]['High'] %}
     <tr>
-        <td rowspan="{{ result[cloud_account]['High'][rule]|length + 1}}">High</td>
-        <td rowspan="{{ result[cloud_account]['High'][rule]|length + 1}}">{{ rule }}</td>
-        {% for entity in result[cloud_account]['High'][rule] %}
+        <td rowspan="{{ result[cloud_account]['High'][rule]['entities']|length + 1}}">High</td>
+        <td rowspan="{{ result[cloud_account]['High'][rule]['entities']|length + 1}}">{{ rule }}</td>
+        {% for entity in result[cloud_account]['High'][rule]['entities'] %}
 
             <tr>
                 <td>{{ entity['type'] }}</td>
@@ -24,9 +24,9 @@
     {% endfor %}
     {% for rule in result[cloud_account]['Medium'] %}
     <tr>
-        <td rowspan="{{ result[cloud_account]['Medium'][rule]|length + 1}}">Medium</td>
-        <td rowspan="{{ result[cloud_account]['Medium'][rule]|length + 1}}">{{ rule }}</td>
-        {% for entity in result[cloud_account]['Medium'][rule] %}
+        <td rowspan="{{ result[cloud_account]['Medium'][rule]['entities']|length + 1}}">Medium</td>
+        <td rowspan="{{ result[cloud_account]['Medium'][rule]['entities']|length + 1}}">{{ rule }}</td>
+        {% for entity in result[cloud_account]['Medium'][rule]['entities'] %}
 
     <tr>
         <td>{{ entity['type'] }}</td>
@@ -37,9 +37,9 @@
     {% endfor %}
     {% for rule in result[cloud_account]['Low'] %}
     <tr>
-        <td rowspan="{{ result[cloud_account]['Low'][rule]|length + 1}}">Low</td>
-        <td rowspan="{{ result[cloud_account]['Low'][rule]|length + 1}}">{{ rule }}</td>
-        {% for entity in result[cloud_account]['Low'][rule] %}
+        <td rowspan="{{ result[cloud_account]['Low'][rule]['entities']|length + 1}}">Low</td>
+        <td rowspan="{{ result[cloud_account]['Low'][rule]['entities']|length + 1}}">{{ rule }}</td>
+        {% for entity in result[cloud_account]['Low'][rule]['entities'] %}
 
     <tr>
         <td>{{ entity['type'] }}</td>
