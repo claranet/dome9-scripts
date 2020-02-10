@@ -222,7 +222,6 @@ def add_entity_to_result(account, name, awsCloudAccountID, rule, entity):
         result[account][rule["severity"]][rule["name"]] = dict()
         result[account][rule["severity"]][rule["name"]]["entities"] = []
         result[account][rule["severity"]][rule["name"]]["remediation"] = rule["remediation"]
-    print(entity['type'] + " - " + convertType_to_url(entity['type'], account, entity['assetId']))
     result[account][rule["severity"]][rule["name"]]["entities"].append({
         'name': entity['name'],
         'type': entity['type'],
