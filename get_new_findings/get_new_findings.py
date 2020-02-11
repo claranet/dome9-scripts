@@ -222,11 +222,12 @@ def add_entity_to_result(account, name, awsCloudAccountID, rule, entity):
         result[account][rule["severity"]][rule["name"]] = dict()
         result[account][rule["severity"]][rule["name"]]["entities"] = []
         result[account][rule["severity"]][rule["name"]]["remediation"] = rule["remediation"]
-    result[account][rule["severity"]][rule["name"]]["entities"].append({
-        'name': entity['name'],
-        'type': entity['type'],
-        'url': convertType_to_url(entity['type'], account, entity['assetId'])
-    })
+    if entity is not None:
+        result[account][rule["severity"]][rule["name"]]["entities"].append({
+            'name': entity['name'],
+            'type': entity['type'],
+            'url': convertType_to_url(entity['type'], account, entity['assetId'])
+        })
 
 
 result = dict()
@@ -265,8 +266,13 @@ for cloud_account in args.cloud_accounts:
                     )
         else:
             if rule not in first_day_assessments[args.assessment_name][cloud_account]["rules"]:
-                print("This Rule hasn't have entities but it's a new non compliant")
-                # TODO Passar para o result
+                add_entity_to_result(
+                    cloud_account,
+                    last_day_assessments[args.assessment_name][cloud_account]['name'],
+                    last_day_assessments[args.assessment_name][cloud_account]['awsCloudAccountID'],
+                    last_day_assessments[args.assessment_name][cloud_account]["rules"][rule],
+                    None
+                )
 
 # --------------------------------------------------
 

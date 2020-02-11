@@ -16,9 +16,15 @@
         <td rowspan="{{ result[cloud_account]['High'][rule]['entities']|length}}">High</td>
         <td rowspan="{{ result[cloud_account]['High'][rule]['entities']|length}}">{{ rule }}</td>
         <td rowspan="{{ result[cloud_account]['High'][rule]['entities']|length}}">{{ result[cloud_account]['High'][rule]['remediation'] }}</td>
-        <td>{{ result[cloud_account]['High'][rule]['entities'][0]['type'] }}</td>
-        <td>{{ result[cloud_account]['High'][rule]['entities'][0]['name'] }}</td>
-        <td>{{ result[cloud_account]['High'][rule]['entities'][0]['url'] }}</td>
+        {% if result[cloud_account]['High'][rule]['entities']|length != 0 %}
+            <td>{{ result[cloud_account]['High'][rule]['entities'][0]['type'] }}</td>
+            <td>{{ result[cloud_account]['High'][rule]['entities'][0]['name'] }}</td>
+            <td>{{ result[cloud_account]['High'][rule]['entities'][0]['url'] }}</td>
+        {% else %}
+            <td></td>
+            <td></td>
+            <td></td>
+        {% endif %}
 
     </tr>
         {% for entity in result[cloud_account]['High'][rule]['entities'][1:] %}
@@ -36,9 +42,15 @@
         <td rowspan="{{ result[cloud_account]['Medium'][rule]['entities']|length}}">Medium</td>
         <td rowspan="{{ result[cloud_account]['Medium'][rule]['entities']|length}}">{{ rule }}</td>
         <td rowspan="{{ result[cloud_account]['Medium'][rule]['entities']|length}}">{{ result[cloud_account]['Medium'][rule]['remediation'] }}</td>
-        <td>{{ result[cloud_account]['Medium'][rule]['entities'][0]['type'] }}</td>
-        <td>{{ result[cloud_account]['Medium'][rule]['entities'][0]['name'] }}</td>
-        <td>{{ result[cloud_account]['Medium'][rule]['entities'][0]['url'] }}</td>
+        {% if result[cloud_account]['Medium'][rule]['entities']|length != 0 %}
+            <td>{{ result[cloud_account]['Medium'][rule]['entities'][0]['type'] }}</td>
+            <td>{{ result[cloud_account]['Medium'][rule]['entities'][0]['name'] }}</td>
+            <td>{{ result[cloud_account]['Medium'][rule]['entities'][0]['url'] }}</td>
+        {% else %}
+            <td></td>
+            <td></td>
+            <td></td>
+        {% endif %}
     </tr>
         {% for entity in result[cloud_account]['Medium'][rule]['entities'][1:] %}
             <tr>
@@ -54,9 +66,15 @@
         <td rowspan="{{ result[cloud_account]['Low'][rule]['entities']|length}}">Low</td>
         <td rowspan="{{ result[cloud_account]['Low'][rule]['entities']|length}}">{{ rule }}</td>
         <td rowspan="{{ result[cloud_account]['Low'][rule]['entities']|length}}">{{ result[cloud_account]['Low'][rule]['remediation'] }}</td>
-        <td>{{ result[cloud_account]['Low'][rule]['entities'][0]['type'] }}</td>
-        <td>{{ result[cloud_account]['Low'][rule]['entities'][0]['name'] }}</td>
-        <td>{{ result[cloud_account]['Low'][rule]['entities'][0]['url'] }}</td>
+        {% if result[cloud_account]['Low'][rule]['entities']|length != 0 %}
+            <td>{{ result[cloud_account]['Low'][rule]['entities'][0]['type'] }}</td>
+            <td>{{ result[cloud_account]['Low'][rule]['entities'][0]['name'] }}</td>
+            <td>{{ result[cloud_account]['Low'][rule]['entities'][0]['url'] }}</td>
+        {% else %}
+            <td></td>
+            <td></td>
+            <td></td>
+        {% endif %}
     <tr>
         {% for entity in result[cloud_account]['Low'][rule]['entities'][1:] %}
             <tr>
