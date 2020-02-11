@@ -8,7 +8,7 @@ export DOME9_API_SECRET=<dome9-api-secret>
 export SMTP_SERVER=<smtp-server>
 export SMTP_PORT=<smtp-port>
 export SMTP_USER=<smtp-user>
- export SMTP_USER_PASSWORD=<smtp-password>
+export SMTP_USER_PASSWORD=<smtp-password>
 ```
 
 * Run:
