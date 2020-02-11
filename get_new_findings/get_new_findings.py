@@ -244,7 +244,7 @@ last_day_assessments = get_assessments()
 for cloud_account in args.cloud_accounts:
     for rule in last_day_assessments[args.assessment_name][cloud_account]["rules"]:
         if rule_has_entities(last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]):
-            if rule in first_day_assessments[args.assessment_name][cloud_account]:
+            if rule in first_day_assessments[args.assessment_name][cloud_account]["rules"]:
                 for entity in last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]:
                     if entity not in first_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]:
                         add_entity_to_result(
