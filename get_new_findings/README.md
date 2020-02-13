@@ -17,5 +17,5 @@ export SMTP_USER_PASSWORD=<smtp-password>
 python get_new_findings.py -d <days> -n "Assessment Name" -a <cloudAccount1> <cloudAccount2> <cloudAccountN> -e <email_to>
 
 # Help
-pthon get_new_findings.py -h
+python get_new_findings.py -h
 ```
