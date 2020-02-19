@@ -19,7 +19,11 @@
         {% if result[cloud_account]['High'][rule]['entities']|length != 0 %}
             <td>{{ result[cloud_account]['High'][rule]['entities'][0]['type'] }}</td>
             <td>{{ result[cloud_account]['High'][rule]['entities'][0]['name'] }}</td>
-            <td>{{ result[cloud_account]['High'][rule]['entities'][0]['url'] }}</td>
+            {% if result[cloud_account]['High'][rule]['entities'][0]['url'] != 'N/A' %}
+                <td><a href="{{ result[cloud_account]['High'][rule]['entities'][0]['url'] }}">Dome9 Link Resource</a></td>
+            {% else %}
+                <td>N/A</td>
+            {% endif %}
         {% else %}
             <td></td>
             <td></td>
@@ -31,7 +35,11 @@
             <tr>
                 <td>{{ entity['type'] }}</td>
                 <td>{{ entity['name'] }}</td>
-                <td>{{ entity['url'] }}</td>
+                {% if entity['url'] != 'N/A' %}
+                    <td><a href="{{ entity['url'] }}">Dome 9 Link Resource</a></td>
+                {% else %}
+                    <td>N/A</td>
+                {% endif %}
             </tr>
         {% endfor %}
 
@@ -45,7 +53,11 @@
         {% if result[cloud_account]['Medium'][rule]['entities']|length != 0 %}
             <td>{{ result[cloud_account]['Medium'][rule]['entities'][0]['type'] }}</td>
             <td>{{ result[cloud_account]['Medium'][rule]['entities'][0]['name'] }}</td>
-            <td>{{ result[cloud_account]['Medium'][rule]['entities'][0]['url'] }}</td>
+            {% if result[cloud_account]['Medium'][rule]['entities'][0]['url'] != 'N/A' %}
+                <td><a href="{{ result[cloud_account]['Medium'][rule]['entities'][0]['url'] }}">Dome9 Link Resource</a></td>
+            {% else %}
+                <td>N/A</td>
+            {% endif %}
         {% else %}
             <td></td>
             <td></td>
@@ -56,7 +68,11 @@
             <tr>
                 <td>{{ entity['type'] }}</td>
                 <td>{{ entity['name'] }}</td>
-                <td>{{ entity['url'] }}</td>
+                {% if entity['url'] != 'N/A' %}
+                    <td><a href="{{ entity['url'] }}">Dome 9 Link Resource</a></td>
+                {% else %}
+                    <td>N/A</td>
+                {% endif %}
             </tr>
         {% endfor %}
     {% endfor %}
@@ -69,7 +85,11 @@
         {% if result[cloud_account]['Low'][rule]['entities']|length != 0 %}
             <td>{{ result[cloud_account]['Low'][rule]['entities'][0]['type'] }}</td>
             <td>{{ result[cloud_account]['Low'][rule]['entities'][0]['name'] }}</td>
-            <td>{{ result[cloud_account]['Low'][rule]['entities'][0]['url'] }}</td>
+            {% if result[cloud_account]['Low'][rule]['entities'][0]['url'] != 'N/A' %}
+                <td><a href="{{ result[cloud_account]['Low'][rule]['entities'][0]['url'] }}">Dome9 Link Resource</a></td>
+            {% else %}
+                <td>N/A</td>
+            {% endif %}
         {% else %}
             <td></td>
             <td></td>
@@ -80,7 +100,11 @@
             <tr>
                 <td>{{ entity['type'] }}</td>
                 <td>{{ entity['name'] }}</td>
-                <td>{{ entity['url'] }}</td>
+                {% if entity['url'] != 'N/A' %}
+                    <td><a href="{{ entity['url'] }}">Dome 9 Link Resource</a></td>
+                {% else %}
+                    <td>N/A</td>
+                {% endif %}
             </tr>
             {% endfor %}
     {% endfor %}
