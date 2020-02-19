@@ -111,7 +111,7 @@ def send_email(html):
         return
 
     message = MIMEMultipart('alternative')
-    message['Subject'] = "New Findings"
+    message['Subject'] = 'Dome 9: New Findings from ' + args.assessment_name + ' Assessment Since ' + datetime.strftime(datetime.now() - timedelta(args.days), '%Y-%m-%d')
     message['From'] = environ.get('SMTP_USER')
     message['To'] = ", ".join(args.email)
     message.attach(MIMEText(html, 'html'))
