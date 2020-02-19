@@ -190,7 +190,7 @@ def get_assessments():
                 break
 
         page_number += 1
-        if page_number < history["pageNumber"] or not has_cloud_accounts(processed_cloud_accounts):
+        if page_number > history["pageSize"] or not has_cloud_accounts(processed_cloud_accounts):
             has_next = False
 
     return assessments
@@ -251,11 +251,21 @@ def get_assessment_by_date(days):
 
 def get_assessment_diff(first_day_assessments, last_day_assessments):
     for cloud_account in args.cloud_accounts:
-        for rule in last_day_assessments[args.assessment_name][cloud_account]["rules"]:
-            if rule_has_entities(last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]):
-                if rule in first_day_assessments[args.assessment_name][cloud_account]["rules"]:
-                    for entity in last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]:
-                        if entity not in first_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]:
+        if 'rules' in last_day_assessments[args.assessment_name][cloud_account]:
+            for rule in last_day_assessments[args.assessment_name][cloud_account]["rules"]:
+                if rule_has_entities(last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]):
+                    if rule in first_day_assessments[args.assessment_name][cloud_account]["rules"]:
+                        for entity in last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]:
+                            if entity not in first_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]:
+                                add_entity_to_result(
+                                    cloud_account,
+                                    last_day_assessments[args.assessment_name][cloud_account]['name'],
+                                    last_day_assessments[args.assessment_name][cloud_account]['awsCloudAccountID'],
+                                    last_day_assessments[args.assessment_name][cloud_account]["rules"][rule],
+                                    last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"][entity]
+                                )
+                    else:
+                        for entity in last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]:
                             add_entity_to_result(
                                 cloud_account,
                                 last_day_assessments[args.assessment_name][cloud_account]['name'],
@@ -264,23 +274,14 @@ def get_assessment_diff(first_day_assessments, last_day_assessments):
                                 last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"][entity]
                             )
                 else:
-                    for entity in last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]:
+                    if rule not in first_day_assessments[args.assessment_name][cloud_account]["rules"]:
                         add_entity_to_result(
                             cloud_account,
                             last_day_assessments[args.assessment_name][cloud_account]['name'],
                             last_day_assessments[args.assessment_name][cloud_account]['awsCloudAccountID'],
                             last_day_assessments[args.assessment_name][cloud_account]["rules"][rule],
-                            last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"][entity]
+                            None
                         )
-            else:
-                if rule not in first_day_assessments[args.assessment_name][cloud_account]["rules"]:
-                    add_entity_to_result(
-                        cloud_account,
-                        last_day_assessments[args.assessment_name][cloud_account]['name'],
-                        last_day_assessments[args.assessment_name][cloud_account]['awsCloudAccountID'],
-                        last_day_assessments[args.assessment_name][cloud_account]["rules"][rule],
-                        None
-                    )
 
 
 def main():
