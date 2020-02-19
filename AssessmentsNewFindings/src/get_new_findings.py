@@ -11,6 +11,8 @@ from email.mime.text import MIMEText
 from jinja2 import Environment, FileSystemLoader
 
 
+result = dict()
+
 base_url = "https://api.dome9.com/v2/"
 
 payload = {
@@ -240,24 +242,29 @@ def add_entity_to_result(account, name, awsCloudAccountID, rule, entity):
         })
 
 
-result = dict()
-args = args()
-check_environment_vars()
+def get_assessment_by_date(days):
+    payload['creationTime'] = dict()
+    payload['creationTime']["from"] = datetime.strftime(datetime.now() - timedelta(days), '%Y-%m-%dT00:00:00Z')
+    payload['creationTime']["to"] = datetime.strftime(datetime.now() - timedelta(days), '%Y-%m-%dT23:59:59Z')
+    return get_assessments()
 
-payload['creationTime'] = dict()
-payload['creationTime']["from"] = datetime.strftime(datetime.now() - timedelta(args.days), '%Y-%m-%dT00:00:00Z')
-payload['creationTime']["to"] = datetime.strftime(datetime.now() - timedelta(args.days), '%Y-%m-%dT23:59:59Z')
-first_day_assessments = get_assessments()
-payload['creationTime']["from"] = datetime.strftime(datetime.now() - timedelta(0), '%Y-%m-%dT00:00:00Z')
-payload['creationTime']["to"] = datetime.strftime(datetime.now() - timedelta(0), '%Y-%m-%dT23:59:59Z')
-last_day_assessments = get_assessments()
 
-for cloud_account in args.cloud_accounts:
-    for rule in last_day_assessments[args.assessment_name][cloud_account]["rules"]:
-        if rule_has_entities(last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]):
-            if rule in first_day_assessments[args.assessment_name][cloud_account]["rules"]:
-                for entity in last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]:
-                    if entity not in first_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]:
+def get_assessment_diff(first_day_assessments, last_day_assessments):
+    for cloud_account in args.cloud_accounts:
+        for rule in last_day_assessments[args.assessment_name][cloud_account]["rules"]:
+            if rule_has_entities(last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]):
+                if rule in first_day_assessments[args.assessment_name][cloud_account]["rules"]:
+                    for entity in last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]:
+                        if entity not in first_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]:
+                            add_entity_to_result(
+                                cloud_account,
+                                last_day_assessments[args.assessment_name][cloud_account]['name'],
+                                last_day_assessments[args.assessment_name][cloud_account]['awsCloudAccountID'],
+                                last_day_assessments[args.assessment_name][cloud_account]["rules"][rule],
+                                last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"][entity]
+                            )
+                else:
+                    for entity in last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]:
                         add_entity_to_result(
                             cloud_account,
                             last_day_assessments[args.assessment_name][cloud_account]['name'],
@@ -266,31 +273,30 @@ for cloud_account in args.cloud_accounts:
                             last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"][entity]
                         )
             else:
-                for entity in last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"]:
+                if rule not in first_day_assessments[args.assessment_name][cloud_account]["rules"]:
                     add_entity_to_result(
                         cloud_account,
                         last_day_assessments[args.assessment_name][cloud_account]['name'],
                         last_day_assessments[args.assessment_name][cloud_account]['awsCloudAccountID'],
                         last_day_assessments[args.assessment_name][cloud_account]["rules"][rule],
-                        last_day_assessments[args.assessment_name][cloud_account]["rules"][rule]["entities"][entity]
+                        None
                     )
-        else:
-            if rule not in first_day_assessments[args.assessment_name][cloud_account]["rules"]:
-                add_entity_to_result(
-                    cloud_account,
-                    last_day_assessments[args.assessment_name][cloud_account]['name'],
-                    last_day_assessments[args.assessment_name][cloud_account]['awsCloudAccountID'],
-                    last_day_assessments[args.assessment_name][cloud_account]["rules"][rule],
-                    None
-                )
 
-# --------------------------------------------------
 
-template_loader = FileSystemLoader('templates')
-env = Environment(loader=template_loader)
-template = env.get_template('table.html')
-html = ""
-for cloud_account in result:
-    html += template.render(result=result, cloud_account=cloud_account)
-send_email(html)
+def main():
+    check_environment_vars()
+    first_day_assessments = get_assessment_by_date(args.days)
+    last_day_assessments = get_assessment_by_date(0)
+    get_assessment_diff(first_day_assessments, last_day_assessments)
+    template_loader = FileSystemLoader('templates')
+    env = Environment(loader=template_loader)
+    template = env.get_template('table.html')
+    html = ""
+    for cloud_account in result:
+        html += template.render(result=result, cloud_account=cloud_account)
+    send_email(html)
 
+
+args = args()
+if __name__== "__main__":
+    main()
