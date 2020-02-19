@@ -2,7 +2,6 @@
 
 Python Script to compare the findings from an assessment in two different dates and send an email with new findings
 
-
 ## Getting Started
 
 ### Arguments
@@ -26,16 +25,49 @@ Python Script to compare the findings from an assessment in two different dates 
 | SMTP_USER_PASSWORD | SMTP Server User password                                                                                                                                                                                          |
 |                    |                                                                                                                                                                                                                    |
 
-## Deployment
+### Run
 
 It's necessary have docker installed
 
-
-* Run:
+* Use Environment Variables file
 
 ```bash
-python get_new_findings.py -d <days> -n "Assessment Name" -a <cloudAccount1> <cloudAccount2> <cloudAccountN> -e <email_to>
-
-# Help
-python get_new_findings.py -h
+# Create a new environment file with name .env (this file should be copied from .env.example>
+cp .env.example .env
+# Edit the file and fill with your credentials
+vi .env
+# Run the script
+docker run --rm -it \
+   --env-file ./.env \
+   outscope/dome9-scripts-assessment-new-findings -d <days> -n '<assessment_name>' -a <cloud_account_dome9_id> -e <email1> <email2>
 ```
+
+* Use OS Environment Variables
+
+**NOTE:** Configure the environment variables in your Operation System before run the command
+
+```bash
+# Configure 
+docker run --rm -it \
+   -e DOME9_API_KEY \
+   -e DOME9_API_SECRET \
+   -e SMTP_SERVER \
+   -e SMTP_PORT \
+   -e SMTP_USER \
+   -e SMTP_USER_PASSWORD \
+   outscope/dome9-scripts-assessment-new-findings -d <days> -n '<assessment_name>' -a <cloud_account_dome9_id> -e <email1> <email2>
+```
+
+* Pass environment Variables in command line
+
+```bash
+docker run --rm -it \
+   -e DOME9_API_KEY=<dome9_api_key> \
+   -e DOME9_API_SECRET=<dome9_api_secret> \
+   -e SMTP_SERVER=<smtp_server> \
+   -e SMTP_PORT=<smpt_port> \
+   -e SMTP_USER=<smtp_user> \
+   -e SMTP_USER_PASSWORD=<smtp_user_password> \
+   outscope/dome9-scripts-assessment-new-findings -d <days> -n '<assessment_name>' -a <cloud_account_dome9_id> -e <email1> <email2>
+```
+
