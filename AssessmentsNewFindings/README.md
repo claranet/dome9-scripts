@@ -19,6 +19,7 @@ Python Script to compare the findings from an assessment in two different dates 
 |--------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | DOME9_API_KEY      | DOME 9 API KEY - Please visit to create a new API Key - https://supportcenter.checkpoint.com/supportcenter/portal?eventSubmit_doGoviewsolutiondetails=&solutionid=sk144514&partition=General&product=CloudGuard    |
 | DOME9_API_SECRET   | DOME 9 API SECRET - Please visit to create a new API Key - https://supportcenter.checkpoint.com/supportcenter/portal?eventSubmit_doGoviewsolutiondetails=&solutionid=sk144514&partition=General&product=CloudGuard |
+| DOME9_HTTPS_PROXY  | Example: http://5.44.107.147:3128                                                                                                                                                                                  |
 | SMTP_SERVER        | SMTP Server To Send the Email                                                                                                                                                                                      |
 | SMTP_PORT          | SMTP Server Port                                                                                                                                                                                                   |
 | SMTP_USER          | SMTP Server User to authenticate                                                                                                                                                                                   |
@@ -51,6 +52,7 @@ docker run --rm \
 docker run --rm \
    -e DOME9_API_KEY \
    -e DOME9_API_SECRET \
+   -e DOME9_HTTPS_PROXY \
    -e SMTP_SERVER \
    -e SMTP_PORT \
    -e SMTP_USER \
@@ -64,6 +66,7 @@ docker run --rm \
 docker run --rm \
    -e DOME9_API_KEY=<dome9_api_key> \
    -e DOME9_API_SECRET=<dome9_api_secret> \
+   -e DOME9_HTTPS_PROXY=<dome9_https_proxy> \
    -e SMTP_SERVER=<smtp_server> \
    -e SMTP_PORT=<smpt_port> \
    -e SMTP_USER=<smtp_user> \

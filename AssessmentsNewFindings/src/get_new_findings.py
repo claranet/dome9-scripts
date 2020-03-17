@@ -81,10 +81,6 @@ def check_environment_vars():
         print("Environment Variable required: SMTP_USER")
         sys.exit(0)
 
-    if environ.get('SMTP_USER_PASSWORD') is None:
-        print("Environment Variable required: SMTP_USER_PASSWORD")
-        sys.exit(0)
-
 
 def args():
     parser = argparse.ArgumentParser(description='Get the New Findings between the last X Days')
@@ -121,7 +117,9 @@ def send_email(html):
     try:
         server = smtplib.SMTP_SSL(environ.get('SMTP_SERVER'), environ.get('SMTP_PORT'))
         server.ehlo()
-        server.login(environ.get('SMTP_USER'), environ.get('SMTP_USER_PASSWORD'))
+        if environ.get('SMTP_USER_PASSWORD') is not None:
+            server.login(environ.get('SMTP_USER'), environ.get('SMTP_USER_PASSWORD'))
+
         server.send_message(message)
     except Exception as e:
         print("Error sending the email")
@@ -142,7 +140,9 @@ def api_request(verb, url, has_data):
         if has_data:
             r.data = json.dumps(payload)
         prepared_request = s.prepare_request(r)
-        response = s.send(prepared_request, proxies=environ.get('DOME9_PROXY'))
+        response = s.send(prepared_request, proxies={
+            "https": environ.get('DOME9_HTTPS_PROXY')
+        })
         if response.status_code != 200:
             raise Exception("Dome9 API Response unexpected: " + response.reason)
     except Exception as e:
