@@ -37,7 +37,7 @@ cp .env.example .env
 # Edit the file and fill with your credentials
 vi .env
 # Run the script
-docker run --rm -it \
+docker run --rm \
    --env-file ./.env \
    outscope/dome9-scripts-assessment-new-findings -d <days> -n '<assessment_name>' -a <cloud_account_dome9_id> -e <email1> <email2>
 ```
@@ -48,7 +48,7 @@ docker run --rm -it \
 
 ```bash
 # Configure 
-docker run --rm -it \
+docker run --rm \
    -e DOME9_API_KEY \
    -e DOME9_API_SECRET \
    -e SMTP_SERVER \
@@ -61,7 +61,7 @@ docker run --rm -it \
 * Pass environment Variables in command line
 
 ```bash
-docker run --rm -it \
+docker run --rm \
    -e DOME9_API_KEY=<dome9_api_key> \
    -e DOME9_API_SECRET=<dome9_api_secret> \
    -e SMTP_SERVER=<smtp_server> \
