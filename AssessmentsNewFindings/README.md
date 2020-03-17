@@ -22,7 +22,7 @@ Python Script to compare the findings from an assessment in two different dates 
 | DOME9_HTTPS_PROXY  | Example: http://5.44.107.147:3128                                                                                                                                                                                  |
 | SMTP_SERVER        | SMTP Server To Send the Email                                                                                                                                                                                      |
 | SMTP_PORT          | SMTP Server Port                                                                                                                                                                                                   |
-| SMTP_USER          | SMTP Server User to authenticate                                                                                                                                                                                   |
+| SMTP_USER          | SMTP Server User to authenticate and send the email                                                                                                                                                                                  |
 | SMTP_USER_PASSWORD | SMTP Server User password                                                                                                                                                                                          |
 |                    |                                                                                                                                                                                                                    |
 
