@@ -9,7 +9,7 @@ import re
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from jinja2 import Environment, FileSystemLoader
-
+import copy
 
 result = dict()
 
@@ -120,7 +120,8 @@ def send_email(html):
         if environ.get('SMTP_USER_PASSWORD') is not None:
             server.login(environ.get('SMTP_USER'), environ.get('SMTP_USER_PASSWORD'))
 
-        server.send_message(message)
+        server.sendmail(message['From'], message['To'], message.as_string())
+        server.quit()
     except Exception as e:
         print("Error sending the email")
         print(str(e))
@@ -174,7 +175,7 @@ def get_assessments():
         assessments[args.assessment_name][cloud_account] = dict()
     has_next = True
     page_number = 1
-    processed_cloud_accounts = args.cloud_accounts.copy()
+    processed_cloud_accounts = copy.deepcopy(args.cloud_accounts)
     while has_next:
         history = get_assessment_history()
         payload['pageNumber'] = page_number
