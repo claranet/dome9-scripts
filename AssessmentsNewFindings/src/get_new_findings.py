@@ -300,8 +300,8 @@ def main():
     env = Environment(loader=template_loader)
     template = env.get_template('table.html')
     html = ""
-    for cloud_account in result:
-        html += template.render(result=result, cloud_account=cloud_account)
+    for cloud_account in args.cloud_accounts:
+        html += template.render(result=result, cloud_account=cloud_account, name=last_day_assessments[args.assessment_name][cloud_account]['name'])
     send_email(html)
 
 

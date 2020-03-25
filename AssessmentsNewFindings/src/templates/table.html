@@ -1,113 +1,117 @@
-<table style="width:100%" border="1">
-    <caption>AWS Cloud Account - Name: {{ result[cloud_account]['name'] }} - ID: {{ result[cloud_account]['awsCloudAccountID'] }} </caption>
-    <tr>
-        <th rowspan="2">Severity</th>
-        <th rowspan="2">Rule</th>
-        <th rowspan="2">Remediation</th>
-        <th colspan="3">Entity</th>
+{% if cloud_account not in result %}
+<h5> AWS Cloud Account - Name: {{ name }} : Don't exist new findings</h5>
+{% else %}
+    <table style="width:100%" border="1">
+        <caption>AWS Cloud Account - Name: {{ result[cloud_account]['name'] }} - ID: {{ result[cloud_account]['awsCloudAccountID'] }} </caption>
         <tr>
-            <th>Type</th>
-            <th>Name</th>
-            <th>URL</th>
+            <th rowspan="2">Severity</th>
+            <th rowspan="2">Rule</th>
+            <th rowspan="2">Remediation</th>
+            <th colspan="3">Entity</th>
+            <tr>
+                <th>Type</th>
+                <th>Name</th>
+                <th>URL</th>
+            </tr>
         </tr>
-    </tr>
-    {% for rule in result[cloud_account]['High'] %}
-    <tr>
-        <td rowspan="{{ result[cloud_account]['High'][rule]['entities']|length}}">High</td>
-        <td rowspan="{{ result[cloud_account]['High'][rule]['entities']|length}}">{{ rule }}</td>
-        <td rowspan="{{ result[cloud_account]['High'][rule]['entities']|length}}">{{ result[cloud_account]['High'][rule]['remediation'] }}</td>
-        {% if result[cloud_account]['High'][rule]['entities']|length != 0 %}
-            <td>{{ result[cloud_account]['High'][rule]['entities'][0]['type'] }}</td>
-            <td>{{ result[cloud_account]['High'][rule]['entities'][0]['name'] }}</td>
-            {% if result[cloud_account]['High'][rule]['entities'][0]['url'] != 'N/A' %}
-                <td><a href="{{ result[cloud_account]['High'][rule]['entities'][0]['url'] }}">Dome9 Link Resource</a></td>
-            {% else %}
-                <td>N/A</td>
-            {% endif %}
-        {% else %}
-            <td></td>
-            <td></td>
-            <td></td>
-        {% endif %}
-
-    </tr>
-        {% for entity in result[cloud_account]['High'][rule]['entities'][1:] %}
-            <tr>
-                <td>{{ entity['type'] }}</td>
-                <td>{{ entity['name'] }}</td>
-                {% if entity['url'] != 'N/A' %}
-                    <td><a href="{{ entity['url'] }}">Dome 9 Link Resource</a></td>
+        {% for rule in result[cloud_account]['High'] %}
+        <tr>
+            <td rowspan="{{ result[cloud_account]['High'][rule]['entities']|length}}">High</td>
+            <td rowspan="{{ result[cloud_account]['High'][rule]['entities']|length}}">{{ rule }}</td>
+            <td rowspan="{{ result[cloud_account]['High'][rule]['entities']|length}}">{{ result[cloud_account]['High'][rule]['remediation'] }}</td>
+            {% if result[cloud_account]['High'][rule]['entities']|length != 0 %}
+                <td>{{ result[cloud_account]['High'][rule]['entities'][0]['type'] }}</td>
+                <td>{{ result[cloud_account]['High'][rule]['entities'][0]['name'] }}</td>
+                {% if result[cloud_account]['High'][rule]['entities'][0]['url'] != 'N/A' %}
+                    <td><a href="{{ result[cloud_account]['High'][rule]['entities'][0]['url'] }}">Dome9 Link Resource</a></td>
                 {% else %}
                     <td>N/A</td>
                 {% endif %}
-            </tr>
-        {% endfor %}
-
-    {% endfor %}
-
-    {% for rule in result[cloud_account]['Medium'] %}
-    <tr>
-        <td rowspan="{{ result[cloud_account]['Medium'][rule]['entities']|length}}">Medium</td>
-        <td rowspan="{{ result[cloud_account]['Medium'][rule]['entities']|length}}">{{ rule }}</td>
-        <td rowspan="{{ result[cloud_account]['Medium'][rule]['entities']|length}}">{{ result[cloud_account]['Medium'][rule]['remediation'] }}</td>
-        {% if result[cloud_account]['Medium'][rule]['entities']|length != 0 %}
-            <td>{{ result[cloud_account]['Medium'][rule]['entities'][0]['type'] }}</td>
-            <td>{{ result[cloud_account]['Medium'][rule]['entities'][0]['name'] }}</td>
-            {% if result[cloud_account]['Medium'][rule]['entities'][0]['url'] != 'N/A' %}
-                <td><a href="{{ result[cloud_account]['Medium'][rule]['entities'][0]['url'] }}">Dome9 Link Resource</a></td>
             {% else %}
-                <td>N/A</td>
+                <td></td>
+                <td></td>
+                <td></td>
             {% endif %}
-        {% else %}
-            <td></td>
-            <td></td>
-            <td></td>
-        {% endif %}
-    </tr>
-        {% for entity in result[cloud_account]['Medium'][rule]['entities'][1:] %}
-            <tr>
-                <td>{{ entity['type'] }}</td>
-                <td>{{ entity['name'] }}</td>
-                {% if entity['url'] != 'N/A' %}
-                    <td><a href="{{ entity['url'] }}">Dome 9 Link Resource</a></td>
-                {% else %}
-                    <td>N/A</td>
-                {% endif %}
-            </tr>
-        {% endfor %}
-    {% endfor %}
 
-    {% for rule in result[cloud_account]['Low'] %}
-    <tr>
-        <td rowspan="{{ result[cloud_account]['Low'][rule]['entities']|length}}">Low</td>
-        <td rowspan="{{ result[cloud_account]['Low'][rule]['entities']|length}}">{{ rule }}</td>
-        <td rowspan="{{ result[cloud_account]['Low'][rule]['entities']|length}}">{{ result[cloud_account]['Low'][rule]['remediation'] }}</td>
-        {% if result[cloud_account]['Low'][rule]['entities']|length != 0 %}
-            <td>{{ result[cloud_account]['Low'][rule]['entities'][0]['type'] }}</td>
-            <td>{{ result[cloud_account]['Low'][rule]['entities'][0]['name'] }}</td>
-            {% if result[cloud_account]['Low'][rule]['entities'][0]['url'] != 'N/A' %}
-                <td><a href="{{ result[cloud_account]['Low'][rule]['entities'][0]['url'] }}">Dome9 Link Resource</a></td>
-            {% else %}
-                <td>N/A</td>
-            {% endif %}
-        {% else %}
-            <td></td>
-            <td></td>
-            <td></td>
-        {% endif %}
-    </tr>
-        {% for entity in result[cloud_account]['Low'][rule]['entities'][1:] %}
-            <tr>
-                <td>{{ entity['type'] }}</td>
-                <td>{{ entity['name'] }}</td>
-                {% if entity['url'] != 'N/A' %}
-                    <td><a href="{{ entity['url'] }}">Dome 9 Link Resource</a></td>
-                {% else %}
-                    <td>N/A</td>
-                {% endif %}
-            </tr>
+        </tr>
+            {% for entity in result[cloud_account]['High'][rule]['entities'][1:] %}
+                <tr>
+                    <td>{{ entity['type'] }}</td>
+                    <td>{{ entity['name'] }}</td>
+                    {% if entity['url'] != 'N/A' %}
+                        <td><a href="{{ entity['url'] }}">Dome 9 Link Resource</a></td>
+                    {% else %}
+                        <td>N/A</td>
+                    {% endif %}
+                </tr>
             {% endfor %}
-    {% endfor %}
-</table>
+
+        {% endfor %}
+
+        {% for rule in result[cloud_account]['Medium'] %}
+        <tr>
+            <td rowspan="{{ result[cloud_account]['Medium'][rule]['entities']|length}}">Medium</td>
+            <td rowspan="{{ result[cloud_account]['Medium'][rule]['entities']|length}}">{{ rule }}</td>
+            <td rowspan="{{ result[cloud_account]['Medium'][rule]['entities']|length}}">{{ result[cloud_account]['Medium'][rule]['remediation'] }}</td>
+            {% if result[cloud_account]['Medium'][rule]['entities']|length != 0 %}
+                <td>{{ result[cloud_account]['Medium'][rule]['entities'][0]['type'] }}</td>
+                <td>{{ result[cloud_account]['Medium'][rule]['entities'][0]['name'] }}</td>
+                {% if result[cloud_account]['Medium'][rule]['entities'][0]['url'] != 'N/A' %}
+                    <td><a href="{{ result[cloud_account]['Medium'][rule]['entities'][0]['url'] }}">Dome9 Link Resource</a></td>
+                {% else %}
+                    <td>N/A</td>
+                {% endif %}
+            {% else %}
+                <td></td>
+                <td></td>
+                <td></td>
+            {% endif %}
+        </tr>
+            {% for entity in result[cloud_account]['Medium'][rule]['entities'][1:] %}
+                <tr>
+                    <td>{{ entity['type'] }}</td>
+                    <td>{{ entity['name'] }}</td>
+                    {% if entity['url'] != 'N/A' %}
+                        <td><a href="{{ entity['url'] }}">Dome 9 Link Resource</a></td>
+                    {% else %}
+                        <td>N/A</td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        {% endfor %}
+
+        {% for rule in result[cloud_account]['Low'] %}
+        <tr>
+            <td rowspan="{{ result[cloud_account]['Low'][rule]['entities']|length}}">Low</td>
+            <td rowspan="{{ result[cloud_account]['Low'][rule]['entities']|length}}">{{ rule }}</td>
+            <td rowspan="{{ result[cloud_account]['Low'][rule]['entities']|length}}">{{ result[cloud_account]['Low'][rule]['remediation'] }}</td>
+            {% if result[cloud_account]['Low'][rule]['entities']|length != 0 %}
+                <td>{{ result[cloud_account]['Low'][rule]['entities'][0]['type'] }}</td>
+                <td>{{ result[cloud_account]['Low'][rule]['entities'][0]['name'] }}</td>
+                {% if result[cloud_account]['Low'][rule]['entities'][0]['url'] != 'N/A' %}
+                    <td><a href="{{ result[cloud_account]['Low'][rule]['entities'][0]['url'] }}">Dome9 Link Resource</a></td>
+                {% else %}
+                    <td>N/A</td>
+                {% endif %}
+            {% else %}
+                <td></td>
+                <td></td>
+                <td></td>
+            {% endif %}
+        </tr>
+            {% for entity in result[cloud_account]['Low'][rule]['entities'][1:] %}
+                <tr>
+                    <td>{{ entity['type'] }}</td>
+                    <td>{{ entity['name'] }}</td>
+                    {% if entity['url'] != 'N/A' %}
+                        <td><a href="{{ entity['url'] }}">Dome 9 Link Resource</a></td>
+                    {% else %}
+                        <td>N/A</td>
+                    {% endif %}
+                </tr>
+                {% endfor %}
+        {% endfor %}
+    </table>
+{% endif %}
 </br>
 </br>
