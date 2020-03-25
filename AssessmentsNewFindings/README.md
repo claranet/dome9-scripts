@@ -24,7 +24,7 @@ Python Script to compare the findings from an assessment in two different dates 
 | SMTP_PORT          | SMTP Server Port                                                                                                                                                                                                   |
 | SMTP_USER          | SMTP Server User to authenticate and send the email                                                                                                                                                                                  |
 | SMTP_USER_PASSWORD | SMTP Server User password                                                                                                                                                                                          |
-|                    |                                                                                                                                                                                                                    |
+| SMTP_SSL           | Configure this var with value true if want use SMTP over SSL                                                                                                                                                                                                                   |
 
 ### Run
 
