@@ -126,7 +126,7 @@ def send_email(html):
         if environ.get('SMTP_USER_PASSWORD') is not None:
             server.login(environ.get('SMTP_USER'), environ.get('SMTP_USER_PASSWORD'))
 
-        server.sendmail(message['From'], message['To'], message.as_string())
+        server.sendmail(message['From'], args.email, message.as_string())
         server.quit()
     except Exception as e:
         print("Error sending the email")
