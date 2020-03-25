@@ -118,7 +118,10 @@ def send_email(html):
         message.attach(MIMEText(html, 'html'))
 
     try:
-        server = smtplib.SMTP_SSL(environ.get('SMTP_SERVER'), environ.get('SMTP_PORT'))
+        if environ.get('SMTP_SSL') is not None and environ.get('SMTP_SSL'):
+            server = smtplib.SMTP_SSL(environ.get('SMTP_SERVER'), environ.get('SMTP_PORT'))
+        else:
+            server = smtplib.SMTP(environ.get('SMTP_SERVER'), environ.get('SMTP_PORT'))
         server.ehlo()
         if environ.get('SMTP_USER_PASSWORD') is not None:
             server.login(environ.get('SMTP_USER'), environ.get('SMTP_USER_PASSWORD'))
