@@ -112,7 +112,10 @@ def send_email(html):
     message['Subject'] = 'Dome 9: '+ args.assessment_name + ' Assessment - New Findings Since ' + datetime.strftime(datetime.now() - timedelta(args.days), '%Y-%m-%d')
     message['From'] = environ.get('SMTP_USER')
     message['To'] = ", ".join(args.email)
-    message.attach(MIMEText(html, 'html'))
+    if sys.version_info[0] < 3:
+        message.attach(MIMEText(html.encode('utf-8'), 'html'))
+    else:
+        message.attach(MIMEText(html, 'html'))
 
     try:
         server = smtplib.SMTP_SSL(environ.get('SMTP_SERVER'), environ.get('SMTP_PORT'))
