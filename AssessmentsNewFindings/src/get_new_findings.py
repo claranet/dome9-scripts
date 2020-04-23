@@ -235,6 +235,7 @@ def add_entity_to_result(account, name, awsCloudAccountID, rule, entity):
         result[account] = dict()
         result[account]['awsCloudAccountID'] = awsCloudAccountID
         result[account]['name'] = name
+        result[account]['total'] = 0
     if rule["severity"] not in result[account]:
         result[account][rule["severity"]] = dict()
     if rule["name"] not in result[account][rule["severity"]]:
@@ -247,6 +248,7 @@ def add_entity_to_result(account, name, awsCloudAccountID, rule, entity):
             'type': entity['type'],
             'url': convertType_to_url(entity['type'], account, entity['assetId'])
         })
+    result[account]['total'] += 1
 
 
 def get_assessment_by_date(days):
@@ -306,5 +308,6 @@ def main():
 
 
 args = args()
+
 if __name__== "__main__":
     main()

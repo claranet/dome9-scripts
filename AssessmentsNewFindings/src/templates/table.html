@@ -2,7 +2,7 @@
 <h5> AWS Cloud Account - Name: {{ name }} : Don't exist new findings</h5>
 {% else %}
     <table style="width:100%" border="1">
-        <caption>AWS Cloud Account - Name: {{ result[cloud_account]['name'] }} - ID: {{ result[cloud_account]['awsCloudAccountID'] }} </caption>
+        <caption>AWS Cloud Account - Name: {{ result[cloud_account]['name'] }} - ID: {{ result[cloud_account]['awsCloudAccountID'] }} - Total Findings: {{ result[cloud_account]['total'] }}</caption>
         <tr>
             <th rowspan="2">Severity</th>
             <th rowspan="2">Rule</th>
