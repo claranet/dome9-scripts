@@ -223,6 +223,7 @@ def get_entities_from_rule(rule, entities):
             entities_result[entity["testObj"]["id"]]["type"] = entity["testObj"]["entityType"]
             entities_result[entity["testObj"]["id"]]["name"] = entities[entity["testObj"]["entityType"]][entity["testObj"]["entityIndex"]]["name"]
             entities_result[entity["testObj"]["id"]]["assetId"] = entity["testObj"]["id"]
+            entities_result[entity["testObj"]["id"]]["validationStatus"] = entity["validationStatus"]
     return entities_result
 
 
@@ -231,6 +232,8 @@ def rule_has_entities(entities):
 
 
 def add_entity_to_result(account, name, awsCloudAccountID, rule, entity):
+    if 'Excluded' in entity['validationStatus']:
+        return
     if account not in result:
         result[account] = dict()
         result[account]['awsCloudAccountID'] = awsCloudAccountID
