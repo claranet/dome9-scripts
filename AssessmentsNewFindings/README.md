@@ -25,6 +25,9 @@ Python Script to compare the findings from an assessment in two different dates 
 | SMTP_USER          | SMTP Server User to authenticate and send the email                                                                                                                                                                                  |
 | SMTP_USER_PASSWORD | SMTP Server User password                                                                                                                                                                                          |
 | SMTP_SSL           | Configure this var with value true if want use SMTP over SSL                                                                                                                                                                                                                   |
+| SYSLOG_HOST        | Syslog Server Host |
+| SYSLOG_PORT        | Syslog Server Port |
+
 
 ### Run
 
@@ -57,6 +60,8 @@ docker run --rm \
    -e SMTP_PORT \
    -e SMTP_USER \
    -e SMTP_USER_PASSWORD \
+   -e SYSLOG_HOST \
+   -e SYSLOG_PORT \
    outscope/dome9-scripts-assessment-new-findings -d <days> -n '<assessment_name>' -a <cloud_account_dome9_id> -e <email1> <email2>
 ```
 
@@ -71,6 +76,8 @@ docker run --rm \
    -e SMTP_PORT=<smpt_port> \
    -e SMTP_USER=<smtp_user> \
    -e SMTP_USER_PASSWORD=<smtp_user_password> \
+   -e SYSLOG_HOST=<syslog_host> \
+   -e SYSLOG_PORT=<syslog_port> \
    outscope/dome9-scripts-assessment-new-findings -d <days> -n '<assessment_name>' -a <cloud_account_dome9_id> -e <email1> <email2>
 ```
 

@@ -10,6 +10,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from jinja2 import Environment, FileSystemLoader
 import copy
+from cefevent import CEFEvent
+import socket
 
 result = dict()
 
@@ -38,6 +40,13 @@ type_to_url = {
 }
 
 resources_without_url = ["iamPolicy", "region", "subnet", "iam", "routeTable", "ecsTask"]
+
+severity_to_cef = {
+    'Low': 3,
+    'Medium': 5,
+    'High': 8
+
+}
 
 
 class validate_email():
@@ -79,6 +88,10 @@ def check_environment_vars():
 
     if environ.get('SMTP_USER') is None:
         print("Environment Variable required: SMTP_USER")
+        sys.exit(0)
+
+    if environ.get('SYSLOG_HOST') is None or environ.get('SYSLOG_PORT') is None:
+        print("Environments Variables SYSLOG_HOST and SYSLOG_PORT are required to send events to syslog: Send events to syslog disabled")
         sys.exit(0)
 
 
@@ -296,6 +309,44 @@ def get_assessment_diff(first_day_assessments, last_day_assessments):
                         )
 
 
+def create_cef_event(cloudAccount, assessmentName, severity, entityType, entityName, entityURL, remediation):
+    c = CEFEvent()
+    # Event Metadata
+    c.set_field('name', assessmentName)
+    c.set_field('signatureId', cloudAccount)
+    c.set_field('severity', severity_to_cef[severity])
+    c.set_field('deviceProduct', 'Dome9')
+    c.set_field('cs1', entityName)
+    c.set_field('cs2', entityType)
+    c.set_field('cs3', entityURL)
+    c.set_field('message', remediation)
+    return c.build_cef()
+
+
+def syslog(message, level=6, facility=3):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    data = '<%d>%s' % (level + facility*8, message)
+    sock.sendto(data.encode(), (environ.get('SYSLOG_HOST'), int(environ.get('SYSLOG_PORT'))))
+    sock.close()
+
+
+def send_events_to_syslog(cloud_account):
+    severities = ['High', 'Medium', 'Low']
+    for severity in severities:
+        if severity in result[cloud_account]:
+            for rule in result[cloud_account][severity]:
+                for entity in result[cloud_account][severity][rule]['entities']:
+                    syslog(
+                        create_cef_event(
+                            result[cloud_account]['name'],
+                            args.assessment_name,
+                            severity,
+                            entity['type'],
+                            entity['name'],
+                            entity['url'],
+                            result[cloud_account][severity][rule]['remediation']))
+
+
 def main():
     check_environment_vars()
     first_day_assessments = get_assessment_by_date(args.days)
@@ -307,6 +358,8 @@ def main():
     html = ""
     for cloud_account in args.cloud_accounts:
         html += template.render(result=result, cloud_account=cloud_account, name=last_day_assessments[args.assessment_name][cloud_account]['name'])
+        if environ.get('SYSLOG_HOST') is not None and environ.get('SYSLOG_PORT') is not None:
+            send_events_to_syslog(cloud_account)
     send_email(html)
 
 
@@ -314,3 +367,4 @@ args = args()
 
 if __name__== "__main__":
     main()
+
