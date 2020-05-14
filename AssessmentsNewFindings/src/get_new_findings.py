@@ -332,19 +332,20 @@ def syslog(message, level=6, facility=3):
 
 def send_events_to_syslog(cloud_account):
     severities = ['High', 'Medium', 'Low']
-    for severity in severities:
-        if severity in result[cloud_account]:
-            for rule in result[cloud_account][severity]:
-                for entity in result[cloud_account][severity][rule]['entities']:
-                    syslog(
-                        create_cef_event(
-                            result[cloud_account]['name'],
-                            args.assessment_name,
-                            severity,
-                            entity['type'],
-                            entity['name'],
-                            entity['url'],
-                            result[cloud_account][severity][rule]['remediation']))
+    if cloud_account in result:
+        for severity in severities:
+            if severity in result[cloud_account]:
+                for rule in result[cloud_account][severity]:
+                    for entity in result[cloud_account][severity][rule]['entities']:
+                        syslog(
+                            create_cef_event(
+                                result[cloud_account]['name'],
+                                args.assessment_name,
+                                severity,
+                                entity['type'],
+                                entity['name'],
+                                entity['url'],
+                                result[cloud_account][severity][rule]['remediation']))
 
 
 def main():
