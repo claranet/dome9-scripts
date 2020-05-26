@@ -10,7 +10,6 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from jinja2 import Environment, FileSystemLoader
 import copy
-from cefevent import CEFEvent
 import socket
 
 result = dict()
@@ -40,13 +39,6 @@ type_to_url = {
 }
 
 resources_without_url = ["iamPolicy", "region", "subnet", "iam", "routeTable", "ecsTask"]
-
-severity_to_cef = {
-    'Low': 3,
-    'Medium': 5,
-    'High': 8
-
-}
 
 
 class validate_email():
@@ -309,18 +301,17 @@ def get_assessment_diff(first_day_assessments, last_day_assessments):
                         )
 
 
-def create_cef_event(cloudAccount, assessmentName, severity, entityType, entityName, entityURL, remediation):
-    c = CEFEvent()
-    # Event Metadata
-    c.set_field('name', assessmentName)
-    c.set_field('signatureId', cloudAccount)
-    c.set_field('severity', severity_to_cef[severity])
-    c.set_field('deviceProduct', 'Dome9')
-    c.set_field('cs1', entityName)
-    c.set_field('cs2', entityType)
-    c.set_field('cs3', entityURL)
-    c.set_field('message', remediation)
-    return c.build_cef()
+def create_json_event(cloudAccount, assessmentName, severity, entityType, entityName, entityURL, remediation):
+    return json.dumps({
+        'name': assessmentName,
+        'signatureId': cloudAccount,
+        'severity': severity,
+        'deviceProduct': 'Dome9',
+        'entityName': entityName,
+        'entityUrl': entityURL,
+        'entityType': entityType,
+        'remediation': remediation
+    })
 
 
 def syslog(message, level=6, facility=3):
@@ -338,7 +329,7 @@ def send_events_to_syslog(cloud_account):
                 for rule in result[cloud_account][severity]:
                     for entity in result[cloud_account][severity][rule]['entities']:
                         syslog(
-                            create_cef_event(
+                            create_json_event(
                                 result[cloud_account]['name'],
                                 args.assessment_name,
                                 severity,
