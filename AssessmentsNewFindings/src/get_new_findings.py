@@ -108,13 +108,16 @@ def args():
     return parser.parse_args()
 
 
-def send_email(html):
+def send_email(html, diff):
 
     if args.email is None:
         return
 
     message = MIMEMultipart('alternative')
-    message['Subject'] = 'Dome 9: '+ args.assessment_name + ' Assessment - New Findings Since ' + datetime.strftime(datetime.now() - timedelta(args.days), '%Y-%m-%d')
+    if diff:
+        message['Subject'] = 'Dome 9: ' + args.assessment_name + ' Assessment - New Findings Since ' + datetime.strftime(datetime.now() - timedelta(args.days), '%Y-%m-%d')
+    else:
+        message['Subject'] = 'Dome 9: ' + args.assessment_name + ' Assessment - Findings'
     message['From'] = environ.get('SMTP_USER')
     message['To'] = ", ".join(args.email)
     if sys.version_info[0] < 3:
@@ -237,7 +240,7 @@ def rule_has_entities(entities):
 
 
 def add_entity_to_result(account, name, awsCloudAccountID, rule, entity):
-    if 'Excluded' in entity['validationStatus']:
+    if entity is not None and 'Excluded' in entity['validationStatus']:
         return
     if account not in result:
         result[account] = dict()
@@ -339,20 +342,38 @@ def send_events_to_syslog(cloud_account):
                                 result[cloud_account][severity][rule]['remediation']))
 
 
+def create_dummy_assesment():
+    dummy_assessment = dict()
+    dummy_assessment[args.assessment_name] = dict()
+    for cloud_account in args.cloud_accounts:
+        dummy_assessment[args.assessment_name][cloud_account] = dict()
+        dummy_assessment[args.assessment_name][cloud_account]["rules"] = dict()
+    return dummy_assessment
+
+
 def main():
     check_environment_vars()
     first_day_assessments = get_assessment_by_date(args.days)
     last_day_assessments = get_assessment_by_date(0)
-    get_assessment_diff(first_day_assessments, last_day_assessments)
     template_loader = FileSystemLoader('templates')
     env = Environment(loader=template_loader)
     template = env.get_template('table.html')
+
+    # Send Email and to SIEM from diff assessments
     html = ""
+    get_assessment_diff(first_day_assessments, last_day_assessments)
     for cloud_account in args.cloud_accounts:
         html += template.render(result=result, cloud_account=cloud_account, name=last_day_assessments[args.assessment_name][cloud_account]['name'])
         if environ.get('SYSLOG_HOST') is not None and environ.get('SYSLOG_PORT') is not None:
             send_events_to_syslog(cloud_account)
-    send_email(html)
+    send_email(html, True)
+
+    # Send Email from last assesment
+    html = ""
+    get_assessment_diff(create_dummy_assesment(), last_day_assessments)
+    for cloud_account in args.cloud_accounts:
+        html += template.render(result=result, cloud_account=cloud_account, name=last_day_assessments[args.assessment_name][cloud_account]['name'])
+    send_email(html, False)
 
 
 args = args()
