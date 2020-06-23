@@ -215,11 +215,11 @@ def get_rules_from_assessment(rules, entities):
     rules_result = dict()
     for rule in rules:
         if rule["nonComplyingCount"] != 0:
-            rules_result[rule["rule"]["ruleId"]] = dict()
-            rules_result[rule["rule"]["ruleId"]]["name"] = rule["rule"]["name"]
-            rules_result[rule["rule"]["ruleId"]]["severity"] = rule["rule"]["severity"]
-            rules_result[rule["rule"]["ruleId"]]["remediation"] = rule["rule"]["remediation"]
-            rules_result[rule["rule"]["ruleId"]]["entities"] = get_entities_from_rule(rule, entities)
+            rules_result[rule["rule"]["logicHash"]] = dict()
+            rules_result[rule["rule"]["logicHash"]]["name"] = rule["rule"]["name"]
+            rules_result[rule["rule"]["logicHash"]]["severity"] = rule["rule"]["severity"]
+            rules_result[rule["rule"]["logicHash"]]["remediation"] = rule["rule"]["remediation"]
+            rules_result[rule["rule"]["logicHash"]]["entities"] = get_entities_from_rule(rule, entities)
     return rules_result
 
 
